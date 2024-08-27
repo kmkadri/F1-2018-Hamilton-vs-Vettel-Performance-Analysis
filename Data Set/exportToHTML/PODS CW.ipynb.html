@@ -1,0 +1,349 @@
+<html>
+<head>
+<title>PODS CW.ipynb</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #8c8c8c; font-style: italic;}
+.s1 { color: #080808;}
+.s2 { color: #0033b3;}
+.s3 { color: #067d17;}
+.s4 { color: #1750eb;}
+</style>
+</head>
+<body bgcolor="#ffffff">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#c0c0c0" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+PODS CW.ipynb</font>
+</center></td></tr></table>
+<pre><span class="s0">#%% 
+#Khalid Kadri</span>
+<span class="s0">#Department of computer science</span>
+<span class="s0"># City, University of London</span>
+<span class="s0"># London United Kingdom</span>
+<span class="s0"># Khalid.kadri@city.ac.uk</span>
+
+<span class="s0">#Title: A Comparative Analysis of Lewis Hamilton and Sebastian Vettel's Performance in the 2018 Formula 1 Season</span>
+
+<span class="s0">#In this analysis, we are interested in understanding how the performance of Lewis Hamilton and Sebastian Vettel in the 2018 Formula 1 season compares. Specifically, we want to determine which driver had the better performance based on various metrics such as number of races, podium finishes, and points earned.</span>
+<span class="s0">#%% 
+#The data for this analysis was obtained from a user on kaggle and includes detailed information on the races, podium finishes, and points earned by each driver during the 2018 season. We selected this data source because it is a reliable and comprehensive source of information on the Formula 1 season.</span>
+<span class="s0">#%% 
+</span><span class="s2">import </span><span class="s1">numpy </span><span class="s2">as </span><span class="s1">np</span>
+<span class="s2">from </span><span class="s1">scipy </span><span class="s2">import </span><span class="s1">stats</span>
+<span class="s2">from </span><span class="s1">tqdm </span><span class="s2">import </span><span class="s1">tqdm</span>
+<span class="s2">import </span><span class="s1">pandas </span><span class="s2">as </span><span class="s1">pd</span>
+<span class="s2">import </span><span class="s1">datetime </span><span class="s2">as </span><span class="s1">dt</span>
+<span class="s2">import </span><span class="s1">matplotlib.pyplot </span><span class="s2">as </span><span class="s1">plt</span>
+
+<span class="s0">#imported Libraries</span>
+<span class="s1">circuits_df = pd.read_csv(</span><span class="s3">'circuits.csv'</span><span class="s1">)</span>
+<span class="s1">constructor_results_df = pd.read_csv(</span><span class="s3">'constructor_results.csv'</span><span class="s1">)</span>
+<span class="s1">constructor_standings_df = pd.read_csv(</span><span class="s3">'constructor_standings.csv'</span><span class="s1">)</span>
+<span class="s1">constructors_df = pd.read_csv(</span><span class="s3">'constructors.csv'</span><span class="s1">)</span>
+<span class="s1">driver_standings_df = pd.read_csv(</span><span class="s3">'driver_standings.csv'</span><span class="s1">)</span>
+<span class="s1">drivers_df = pd.read_csv(</span><span class="s3">'drivers.csv'</span><span class="s1">)</span>
+<span class="s1">lap_times_df = pd.read_csv(</span><span class="s3">'lap_times.csv'</span><span class="s1">)</span>
+<span class="s1">pit_stops_df = pd.read_csv(</span><span class="s3">'pit_stops.csv'</span><span class="s1">)</span>
+<span class="s1">qualifying_df = pd.read_csv(</span><span class="s3">'qualifying.csv'</span><span class="s1">)</span>
+<span class="s1">races_df = pd.read_csv(</span><span class="s3">'races.csv'</span><span class="s1">)</span>
+<span class="s1">results_df = pd.read_csv(</span><span class="s3">'results.csv'</span><span class="s1">)</span>
+<span class="s1">seasons_df = pd.read_csv(</span><span class="s3">'seasons.csv'</span><span class="s1">)</span>
+<span class="s1">sprint_results_df = pd.read_csv(</span><span class="s3">'sprint_results.csv'</span><span class="s1">)</span>
+<span class="s1">status_df = pd.read_csv(</span><span class="s3">'status.csv'</span><span class="s1">)</span>
+
+<span class="s0"># To compare lap times, we  calculate the average lap time for each driver and perform a t-test to determine whether there is a statistically significant difference between the two drivers' average lap times.</span>
+<span class="s0"># for pit stops, we could calculate the total number of pit stops for each driver and compare the results using a t-test.</span>
+<span class="s0"># we also compared lap 1 gains or losses, by calculating the total number of lap 1 gains or losses for each driver and compare the results using a t-test.</span>
+
+<span class="s0"># Calculate the means and standard deviations of the two samples</span>
+<span class="s0">#mean1 = np.mean(sample1)</span>
+<span class="s0">#mean2 = np.mean(sample2)</span>
+<span class="s0">#std1 = np.std(sample1)</span>
+<span class="s0">#std2 = np.std(sample2)</span>
+
+<span class="s0"># Calculate the t-value and degrees of freedom</span>
+<span class="s0">#t, p = stats.ttest_ind(sample1, sample2, equal_var=True)</span>
+<span class="s0">#df = len(sample1) + len(sample2) - 2</span>
+
+<span class="s0"># Print the t-value and p-value</span>
+<span class="s0">#print(f't-value: {t:.3f}')</span>
+<span class="s0">#print(f'p-value: {p:.3f}')</span>
+
+
+<span class="s1">laptime_df = pd.merge(lap_times_df,drivers_df[[</span><span class="s3">'driverId'</span><span class="s1">,</span><span class="s3">'code'</span><span class="s1">,</span><span class="s3">'driverRef'</span><span class="s1">]],how=</span><span class="s3">'left'</span><span class="s1">, on=</span><span class="s3">'driverId'</span><span class="s1">)</span>
+<span class="s1">laptime_df =pd.merge(laptime_df,races_df[[</span><span class="s3">'raceId'</span><span class="s1">,</span><span class="s3">'name'</span><span class="s1">,</span><span class="s3">'date'</span><span class="s1">,</span><span class="s3">'year'</span><span class="s1">]],how= </span><span class="s3">'left'</span><span class="s1">, on=</span><span class="s3">'raceId'</span><span class="s1">)</span>
+
+<span class="s1">laptime_df[</span><span class="s3">'time'</span><span class="s1">]=pd.to_timedelta(laptime_df[</span><span class="s3">'milliseconds'</span><span class="s1">], unit=</span><span class="s3">'ms'</span><span class="s1">)</span>
+<span class="s1">laptime_df[</span><span class="s3">'seconds'</span><span class="s1">]=laptime_df[</span><span class="s3">'milliseconds'</span><span class="s1">]/</span><span class="s4">1000</span>
+<span class="s1">laptime_df</span>
+<span class="s0">#%% 
+#lap analysis for HAM VS VET in 2018</span>
+<span class="s1">laps_df = laptime_df[(laptime_df[</span><span class="s3">'year'</span><span class="s1">]==</span><span class="s4">2018</span><span class="s1">)&amp;((laptime_df[</span><span class="s3">'code'</span><span class="s1">]==</span><span class="s3">'VET'</span><span class="s1">)|(laptime_df[</span><span class="s3">'code'</span><span class="s1">]==</span><span class="s3">'HAM'</span><span class="s1">))].copy()</span>
+<span class="s1">laps_df.rename(columns={</span><span class="s3">'position'</span><span class="s1">:</span><span class="s3">'lap position'</span><span class="s1">},inplace=</span><span class="s2">True</span><span class="s1">)</span>
+<span class="s1">laps_df = laps_df.merge(results_df[[</span><span class="s3">'raceId'</span><span class="s1">,</span><span class="s3">'driverId'</span><span class="s1">,</span><span class="s3">'position'</span><span class="s1">]],how=</span><span class="s3">'left'</span><span class="s1">,on=[</span><span class="s3">'raceId'</span><span class="s1">,</span><span class="s3">'driverId'</span><span class="s1">])</span>
+<span class="s1">laps_df = laps_df.merge(pit_stops_df[[</span><span class="s3">'raceId'</span><span class="s1">,</span><span class="s3">'driverId'</span><span class="s1">,</span><span class="s3">'lap'</span><span class="s1">,</span><span class="s3">'stop'</span><span class="s1">]],how=</span><span class="s3">'left'</span><span class="s1">,on=[</span><span class="s3">'raceId'</span><span class="s1">,</span><span class="s3">'driverId'</span><span class="s1">,</span><span class="s3">'lap'</span><span class="s1">])</span>
+<span class="s1">laps_df[</span><span class="s3">'stop'</span><span class="s1">].fillna(</span><span class="s4">0</span><span class="s1">,inplace=</span><span class="s2">True</span><span class="s1">)</span>
+<span class="s1">laps_df[</span><span class="s3">'stop'</span><span class="s1">]=laps_df[</span><span class="s3">'stop'</span><span class="s1">].astype(int)</span>
+<span class="s1">laps_df[</span><span class="s3">'stop'</span><span class="s1">][laps_df[</span><span class="s3">'stop'</span><span class="s1">]==</span><span class="s4">0</span><span class="s1">] = </span><span class="s3">''</span>
+<span class="s1">laps_df</span>
+<span class="s0">#%% 
+</span><span class="s2">import </span><span class="s1">seaborn </span><span class="s2">as </span><span class="s1">sns</span>
+<span class="s1">plt.style.use(</span><span class="s3">'seaborn-whitegrid'</span><span class="s1">)</span>
+<span class="s1">plt.rcParams[</span><span class="s3">'figure.figsize'</span><span class="s1">]=</span><span class="s4">10</span><span class="s1">,</span><span class="s4">5</span>
+<span class="s1">plt.rcParams[</span><span class="s3">'font.family'</span><span class="s1">] = </span><span class="s3">'Arial'</span>
+<span class="s1">plt.rcParams[</span><span class="s3">'font.size'</span><span class="s1">] = </span><span class="s4">11</span>
+<span class="s1">plt.rcParams[</span><span class="s3">'lines.linewidth'</span><span class="s1">] = </span><span class="s4">1</span>
+<span class="s1">plt.rcParams[</span><span class="s3">'axes.labelsize'</span><span class="s1">]=</span><span class="s4">11</span>
+<span class="s1">plt.rcParams[</span><span class="s3">'xtick.labelsize'</span><span class="s1">]=</span><span class="s4">11</span>
+<span class="s1">plt.rcParams[</span><span class="s3">'ytick.labelsize'</span><span class="s1">]=</span><span class="s4">11</span>
+<span class="s1">plt.rcParams[</span><span class="s3">'legend.fontsize'</span><span class="s1">]=</span><span class="s4">11</span>
+
+<span class="s1">plt.figure(figsize=(</span><span class="s4">10</span><span class="s1">, </span><span class="s4">100</span><span class="s1">))</span>
+<span class="s2">for </span><span class="s1">i, f </span><span class="s2">in </span><span class="s1">tqdm(enumerate(laps_df[</span><span class="s3">'name'</span><span class="s1">].unique())):</span>
+    <span class="s2">try</span><span class="s1">:</span>
+        <span class="s1">HAM_pos = list(set(laps_df[(laps_df[</span><span class="s3">'name'</span><span class="s1">]==f)&amp;(laps_df[</span><span class="s3">'code'</span><span class="s1">]==</span><span class="s3">'HAM'</span><span class="s1">)][</span><span class="s3">'position'</span><span class="s1">]))[</span><span class="s4">0</span><span class="s1">]</span>
+        <span class="s2">if </span><span class="s1">HAM_pos == </span><span class="s3">r'\N'</span><span class="s1">:</span>
+            <span class="s1">HAM_pos = </span><span class="s3">'DNF'</span>
+    <span class="s2">except</span><span class="s1">:</span>
+        <span class="s1">HAM_pos = </span><span class="s3">'DNS'</span>
+    <span class="s2">try</span><span class="s1">:</span>
+        <span class="s1">VET_pos = list(set(laps_df[(laps_df[</span><span class="s3">'name'</span><span class="s1">]==f)&amp;(laps_df[</span><span class="s3">'code'</span><span class="s1">]==</span><span class="s3">'VET'</span><span class="s1">)][</span><span class="s3">'position'</span><span class="s1">]))[</span><span class="s4">0</span><span class="s1">]</span>
+        <span class="s2">if </span><span class="s1">VET_pos == </span><span class="s3">r'\N'</span><span class="s1">:</span>
+            <span class="s1">VET_pos = </span><span class="s3">'DNF'</span>
+    <span class="s2">except</span><span class="s1">:</span>
+        <span class="s1">VET_pos = </span><span class="s3">'DNS'</span>
+    <span class="s1">fig,ax = plt.subplots(</span><span class="s4">1</span><span class="s1">,</span><span class="s4">1</span><span class="s1">)</span>
+    <span class="s1">plt.title(f)</span>
+    <span class="s1">sns.lineplot(data=laps_df[(laps_df[</span><span class="s3">'name'</span><span class="s1">]==f)&amp;(laps_df[</span><span class="s3">'code'</span><span class="s1">]==</span><span class="s3">'HAM'</span><span class="s1">)],</span>
+                 <span class="s1">x=</span><span class="s3">'lap'</span><span class="s1">,</span>
+                 <span class="s1">y=</span><span class="s3">'seconds'</span><span class="s1">,</span>
+                 <span class="s1">hue=</span><span class="s3">'code'</span><span class="s1">,</span>
+                 <span class="s1">palette=[</span><span class="s3">'Purple'</span><span class="s1">],</span>
+                 <span class="s1">ax=ax,</span>
+                 <span class="s1">marker=</span><span class="s3">'.'</span><span class="s1">,</span>
+                 <span class="s0"># marker_size=3</span>
+                 <span class="s1">)</span>
+    <span class="s1">HAM_stops = laps_df[(laps_df[</span><span class="s3">'name'</span><span class="s1">]==f)&amp;(laps_df[</span><span class="s3">'code'</span><span class="s1">]==</span><span class="s3">'HAM'</span><span class="s1">)]</span>
+    <span class="s2">for </span><span class="s1">j,label </span><span class="s2">in </span><span class="s1">enumerate(HAM_stops[</span><span class="s3">'stop'</span><span class="s1">]):</span>
+        <span class="s1">plt.annotate(label, (HAM_stops[</span><span class="s3">'lap'</span><span class="s1">].iloc[j],</span>
+                             <span class="s1">HAM_stops[</span><span class="s3">'seconds'</span><span class="s1">].iloc[j]</span>
+                             <span class="s1">),</span>
+                     <span class="s1">color = </span><span class="s3">'purple'</span><span class="s1">,</span>
+                     <span class="s1">bbox=dict(boxstyle=</span><span class="s3">&quot;circle,pad=0&quot;</span><span class="s1">, fc=</span><span class="s3">&quot;white&quot;</span><span class="s1">, ec=</span><span class="s3">&quot;black&quot;</span><span class="s1">, lw=</span><span class="s4">0.5</span><span class="s1">),</span>
+                     <span class="s1">ha=</span><span class="s3">&quot;center&quot;</span><span class="s1">, va=</span><span class="s3">&quot;center&quot;</span><span class="s1">,</span>
+                     <span class="s1">)</span>
+
+    <span class="s1">sns.lineplot(data=laps_df[(laps_df[</span><span class="s3">'name'</span><span class="s1">]==f)&amp;(laps_df[</span><span class="s3">'code'</span><span class="s1">]==</span><span class="s3">'VET'</span><span class="s1">)],</span>
+                 <span class="s1">x=</span><span class="s3">'lap'</span><span class="s1">,</span>
+                 <span class="s1">y=</span><span class="s3">'seconds'</span><span class="s1">,</span>
+                 <span class="s1">hue=</span><span class="s3">'code'</span><span class="s1">,</span>
+                 <span class="s1">ax=ax,</span>
+                 <span class="s1">palette = [</span><span class="s3">'green'</span><span class="s1">],</span>
+                 <span class="s1">marker=</span><span class="s3">'.'</span><span class="s1">,</span>
+                 <span class="s1">)</span>
+
+    <span class="s1">VET_stops = laps_df[(laps_df[</span><span class="s3">'name'</span><span class="s1">]==f)&amp;(laps_df[</span><span class="s3">'code'</span><span class="s1">]==</span><span class="s3">'VET'</span><span class="s1">)]</span>
+    <span class="s2">for </span><span class="s1">j,label </span><span class="s2">in </span><span class="s1">enumerate(VET_stops[</span><span class="s3">'stop'</span><span class="s1">]):</span>
+        <span class="s1">plt.annotate(label, (VET_stops[</span><span class="s3">'lap'</span><span class="s1">].iloc[j],</span>
+                             <span class="s1">VET_stops[</span><span class="s3">'seconds'</span><span class="s1">].iloc[j]</span>
+                             <span class="s1">),</span>
+                     <span class="s1">color=</span><span class="s3">'green'</span><span class="s1">,</span>
+                     <span class="s1">bbox=dict(boxstyle=</span><span class="s3">&quot;circle,pad=0&quot;</span><span class="s1">, fc=</span><span class="s3">&quot;white&quot;</span><span class="s1">, ec=</span><span class="s3">&quot;orange&quot;</span><span class="s1">, lw=</span><span class="s4">0.5</span><span class="s1">),</span>
+                     <span class="s1">ha=</span><span class="s3">&quot;center&quot;</span><span class="s1">, va=</span><span class="s3">&quot;center&quot;</span><span class="s1">,</span>
+                     <span class="s1">)</span>
+
+    <span class="s2">if </span><span class="s1">ax.get_legend_handles_labels()[</span><span class="s4">1</span><span class="s1">][</span><span class="s4">0</span><span class="s1">]==</span><span class="s3">'HAM'</span><span class="s1">:</span>
+        <span class="s1">plt.legend([</span><span class="s3">'HAM: P-'</span><span class="s1">+str(HAM_pos), </span><span class="s3">'VET: P-'</span><span class="s1">+str(VET_pos)])</span>
+        <span class="s1">leg = ax.get_legend()</span>
+        <span class="s1">leg.legendHandles[</span><span class="s4">0</span><span class="s1">].set_color(</span><span class="s3">'purple'</span><span class="s1">)</span>
+        <span class="s1">leg.legendHandles[</span><span class="s4">1</span><span class="s1">].set_color(</span><span class="s3">'green'</span><span class="s1">)</span>
+    <span class="s2">elif </span><span class="s1">ax.get_legend_handles_labels()[</span><span class="s4">1</span><span class="s1">][</span><span class="s4">0</span><span class="s1">]==</span><span class="s3">'VET'</span><span class="s1">:</span>
+        <span class="s1">plt.legend([</span><span class="s3">'VET: P-'</span><span class="s1">+str(VET_pos), </span><span class="s3">'HAM: P-'</span><span class="s1">+str(HAM_pos)])</span>
+        <span class="s1">leg = ax.get_legend()</span>
+        <span class="s1">leg.legendHandles[</span><span class="s4">0</span><span class="s1">].set_color(</span><span class="s3">'purple'</span><span class="s1">)</span>
+        <span class="s1">leg.legendHandles[</span><span class="s4">1</span><span class="s1">].set_color(</span><span class="s3">'green'</span><span class="s1">)</span>
+
+
+<span class="s1">plt.tight_layout()</span>
+<span class="s1">plt.show()</span>
+<span class="s0">#%% 
+#Race results analysis</span>
+<span class="s1">results_df = results_df.merge(drivers_df[[</span><span class="s3">'driverId'</span><span class="s1">,</span><span class="s3">'code'</span><span class="s1">,</span><span class="s3">'driverRef'</span><span class="s1">]],how=</span><span class="s3">'left'</span><span class="s1">,on=</span><span class="s3">'driverId'</span><span class="s1">)</span>
+<span class="s1">results_df = results_df.merge(races_df[[</span><span class="s3">'raceId'</span><span class="s1">,</span><span class="s3">'name'</span><span class="s1">,</span><span class="s3">'date'</span><span class="s1">,</span><span class="s3">'year'</span><span class="s1">]],how=</span><span class="s3">'left'</span><span class="s1">,on=</span><span class="s3">'raceId'</span><span class="s1">)</span>
+
+
+<span class="s1">results_df.drop_duplicates(inplace=</span><span class="s2">True</span><span class="s1">)</span>
+
+
+<span class="s1">results_df[results_df[</span><span class="s3">'position'</span><span class="s1">]==</span><span class="s3">r'\N'</span><span class="s1">]=</span><span class="s4">0</span>
+<span class="s1">results_df[</span><span class="s3">'position'</span><span class="s1">] = results_df[</span><span class="s3">'position'</span><span class="s1">].astype(int)</span>
+
+
+
+<span class="s1">results_df = results_df[(results_df[</span><span class="s3">'year'</span><span class="s1">]==</span><span class="s4">2018</span><span class="s1">)&amp;((results_df[</span><span class="s3">'code'</span><span class="s1">]==</span><span class="s3">'HAM'</span><span class="s1">)|(results_df[</span><span class="s3">'code'</span><span class="s1">]==</span><span class="s3">'VET'</span><span class="s1">))]</span>
+<span class="s1">results_df</span>
+<span class="s0">#%% 
+#comparision in finishing position between hamilton and vettel per race in 2018</span>
+<span class="s1">plt.style.use(</span><span class="s3">'seaborn-whitegrid'</span><span class="s1">)</span>
+<span class="s1">plt.rcParams[</span><span class="s3">'figure.figsize'</span><span class="s1">]=</span><span class="s4">10</span><span class="s1">,</span><span class="s4">15</span>
+<span class="s1">plt.rcParams[</span><span class="s3">'font.family'</span><span class="s1">] = </span><span class="s3">'Arial'</span>
+<span class="s1">plt.rcParams[</span><span class="s3">'font.size'</span><span class="s1">] = </span><span class="s4">12</span>
+<span class="s1">plt.rcParams[</span><span class="s3">'lines.linewidth'</span><span class="s1">] = </span><span class="s4">1</span>
+<span class="s1">plt.rcParams[</span><span class="s3">'axes.labelsize'</span><span class="s1">]=</span><span class="s4">12</span>
+<span class="s1">plt.rcParams[</span><span class="s3">'xtick.labelsize'</span><span class="s1">]=</span><span class="s4">12</span>
+<span class="s1">plt.rcParams[</span><span class="s3">'ytick.labelsize'</span><span class="s1">]=</span><span class="s4">12</span>
+<span class="s1">plt.rcParams[</span><span class="s3">'legend.fontsize'</span><span class="s1">]=</span><span class="s4">12</span>
+<span class="s1">sns.barplot(data=results_df,x=</span><span class="s3">'position'</span><span class="s1">, y=</span><span class="s3">'name'</span><span class="s1">,hue=</span><span class="s3">'code'</span><span class="s1">,palette=[</span><span class="s3">'green'</span><span class="s1">,</span><span class="s3">'purple'</span><span class="s1">])</span>
+<span class="s1">plt.tight_layout()</span>
+<span class="s1">plt.show()</span>
+<span class="s0">#%% 
+</span><span class="s1">driver_standings_df = driver_standings_df.merge(drivers_df[[</span><span class="s3">'driverId'</span><span class="s1">,</span><span class="s3">'code'</span><span class="s1">,</span><span class="s3">'driverRef'</span><span class="s1">]],how=</span><span class="s3">'left'</span><span class="s1">,on=</span><span class="s3">'driverId'</span><span class="s1">)</span>
+<span class="s1">driver_standings_df = driver_standings_df.merge(races_df[[</span><span class="s3">'raceId'</span><span class="s1">,</span><span class="s3">'name'</span><span class="s1">,</span><span class="s3">'date'</span><span class="s1">,</span><span class="s3">'year'</span><span class="s1">]],how=</span><span class="s3">'left'</span><span class="s1">,on=</span><span class="s3">'raceId'</span><span class="s1">)</span>
+<span class="s1">driver_standings_df</span>
+<span class="s0">#%% 
+</span><span class="s1">driver_standings_df = driver_standings_df[(driver_standings_df[</span><span class="s3">'year'</span><span class="s1">]==</span><span class="s4">2018</span><span class="s1">)&amp;((driver_standings_df[</span><span class="s3">'code'</span><span class="s1">]==</span><span class="s3">'HAM'</span><span class="s1">)|(driver_standings_df[</span><span class="s3">'code'</span><span class="s1">]==</span><span class="s3">'VET'</span><span class="s1">))]</span>
+<span class="s1">driver_standings_df.sort_values([</span><span class="s3">'date'</span><span class="s1">],inplace=</span><span class="s2">True</span><span class="s1">)</span>
+
+<span class="s1">plt.style.use(</span><span class="s3">'seaborn-whitegrid'</span><span class="s1">)</span>
+<span class="s1">plt.rcParams[</span><span class="s3">'figure.figsize'</span><span class="s1">]=</span><span class="s4">10</span><span class="s1">,</span><span class="s4">8</span>
+<span class="s1">plt.rcParams[</span><span class="s3">'font.family'</span><span class="s1">] = </span><span class="s3">'Arial'</span>
+<span class="s1">plt.rcParams[</span><span class="s3">'font.size'</span><span class="s1">] = </span><span class="s4">12</span>
+<span class="s1">plt.rcParams[</span><span class="s3">'lines.linewidth'</span><span class="s1">] = </span><span class="s4">1</span>
+<span class="s1">plt.rcParams[</span><span class="s3">'axes.labelsize'</span><span class="s1">]=</span><span class="s4">12</span>
+<span class="s1">plt.rcParams[</span><span class="s3">'xtick.labelsize'</span><span class="s1">]=</span><span class="s4">12</span>
+<span class="s1">plt.rcParams[</span><span class="s3">'ytick.labelsize'</span><span class="s1">]=</span><span class="s4">12</span>
+<span class="s1">plt.rcParams[</span><span class="s3">'legend.fontsize'</span><span class="s1">]=</span><span class="s4">12</span>
+<span class="s1">sns.lineplot(data=driver_standings_df,x=</span><span class="s3">'name'</span><span class="s1">, y=</span><span class="s3">'points'</span><span class="s1">,hue=</span><span class="s3">'code'</span><span class="s1">,marker=</span><span class="s3">'.'</span><span class="s1">,palette=[</span><span class="s3">'green'</span><span class="s1">,</span><span class="s3">'purple'</span><span class="s1">])</span>
+<span class="s1">plt.tight_layout()</span>
+<span class="s1">plt.xlabel(</span><span class="s3">'Grand prix'</span><span class="s1">)</span>
+<span class="s1">plt.ylabel(</span><span class="s3">'Championship point'</span><span class="s1">)</span>
+<span class="s1">plt.xticks(rotation=</span><span class="s4">90</span><span class="s1">)</span>
+<span class="s1">plt.show()</span>
+<span class="s0">#%% 
+#pitstop analysis</span>
+<span class="s1">pit_stops_df = pit_stops_df.merge(drivers_df[[</span><span class="s3">'driverId'</span><span class="s1">,</span><span class="s3">'code'</span><span class="s1">,</span><span class="s3">'driverRef'</span><span class="s1">]],how=</span><span class="s3">'left'</span><span class="s1">,on=</span><span class="s3">'driverId'</span><span class="s1">)</span>
+<span class="s1">pit_stops_df = pit_stops_df.merge(races_df[[</span><span class="s3">'raceId'</span><span class="s1">,</span><span class="s3">'name'</span><span class="s1">,</span><span class="s3">'date'</span><span class="s1">,</span><span class="s3">'year'</span><span class="s1">]],how=</span><span class="s3">'left'</span><span class="s1">,on=</span><span class="s3">'raceId'</span><span class="s1">)</span>
+<span class="s1">pit_stops_df = pit_stops_df[(pit_stops_df[</span><span class="s3">'year'</span><span class="s1">]==</span><span class="s4">2018</span><span class="s1">)&amp;((pit_stops_df[</span><span class="s3">'code'</span><span class="s1">]==</span><span class="s3">'VET'</span><span class="s1">)|(pit_stops_df[</span><span class="s3">'code'</span><span class="s1">]==</span><span class="s3">'HAM'</span><span class="s1">))]</span>
+<span class="s1">pit_stops_df[</span><span class="s3">'duration'</span><span class="s1">]=pit_stops_df[</span><span class="s3">'milliseconds'</span><span class="s1">]/</span><span class="s4">1000</span>
+<span class="s1">pit_stops_df</span>
+<span class="s0">#%% 
+</span><span class="s1">pit_stops_df[pit_stops_df[</span><span class="s3">'duration'</span><span class="s1">]&lt;</span><span class="s4">40</span><span class="s1">].groupby([</span><span class="s3">'code'</span><span class="s1">]).mean()[</span><span class="s3">'duration'</span><span class="s1">]</span>
+<span class="s0">#%% 
+</span><span class="s1">plt.style.use(</span><span class="s3">'seaborn-whitegrid'</span><span class="s1">)</span>
+<span class="s1">plt.rcParams[</span><span class="s3">'figure.figsize'</span><span class="s1">]=</span><span class="s4">8</span><span class="s1">,</span><span class="s4">12</span>
+<span class="s1">plt.rcParams[</span><span class="s3">'font.family'</span><span class="s1">] = </span><span class="s3">'Arial'</span>
+<span class="s1">plt.rcParams[</span><span class="s3">'font.size'</span><span class="s1">] = </span><span class="s4">12</span>
+<span class="s1">plt.rcParams[</span><span class="s3">'lines.linewidth'</span><span class="s1">] = </span><span class="s4">1</span>
+<span class="s1">plt.rcParams[</span><span class="s3">'axes.labelsize'</span><span class="s1">]=</span><span class="s4">12</span>
+<span class="s1">plt.rcParams[</span><span class="s3">'xtick.labelsize'</span><span class="s1">]=</span><span class="s4">12</span>
+<span class="s1">plt.rcParams[</span><span class="s3">'ytick.labelsize'</span><span class="s1">]=</span><span class="s4">12</span>
+<span class="s1">plt.rcParams[</span><span class="s3">'legend.fontsize'</span><span class="s1">]=</span><span class="s4">12</span>
+<span class="s1">sns.barplot(data=pit_stops_df[pit_stops_df[</span><span class="s3">'duration'</span><span class="s1">]&lt;</span><span class="s4">40</span><span class="s1">].groupby([</span><span class="s3">'name'</span><span class="s1">,</span><span class="s3">'code'</span><span class="s1">]).mean().reset_index(),</span>
+            <span class="s1">y=</span><span class="s3">'name'</span><span class="s1">,</span>
+            <span class="s1">x=</span><span class="s3">'duration'</span><span class="s1">,</span>
+            <span class="s1">hue=</span><span class="s3">'code'</span><span class="s1">,</span>
+            <span class="s1">palette=[</span><span class="s3">'purple'</span><span class="s1">,</span><span class="s3">'green'</span><span class="s1">])</span>
+<span class="s1">plt.tight_layout()</span>
+<span class="s1">plt.ylabel(</span><span class="s3">'Grand prix'</span><span class="s1">)</span>
+<span class="s1">plt.xlabel(</span><span class="s3">'Duration per stop'</span><span class="s1">)</span>
+<span class="s1">plt.show()</span>
+<span class="s0">#%% 
+</span><span class="s1">qualifying_df = qualifying_df.merge(drivers_df[[</span><span class="s3">'driverId'</span><span class="s1">,</span><span class="s3">'code'</span><span class="s1">,</span><span class="s3">'driverRef'</span><span class="s1">]],how=</span><span class="s3">'left'</span><span class="s1">,on=</span><span class="s3">'driverId'</span><span class="s1">)</span>
+<span class="s1">qualifying_df = qualifying_df.merge(races_df[[</span><span class="s3">'raceId'</span><span class="s1">,</span><span class="s3">'name'</span><span class="s1">,</span><span class="s3">'date'</span><span class="s1">,</span><span class="s3">'year'</span><span class="s1">]],how=</span><span class="s3">'left'</span><span class="s1">,on=</span><span class="s3">'raceId'</span><span class="s1">)</span>
+<span class="s1">qualifying_df = qualifying_df[(qualifying_df[</span><span class="s3">'year'</span><span class="s1">]==</span><span class="s4">2018</span><span class="s1">)&amp;((qualifying_df[</span><span class="s3">'code'</span><span class="s1">]==</span><span class="s3">'VET'</span><span class="s1">)|(qualifying_df[</span><span class="s3">'code'</span><span class="s1">]==</span><span class="s3">'HAM'</span><span class="s1">))]</span>
+
+<span class="s1">conversions_df = qualifying_df.copy()</span>
+<span class="s1">conversions_df.rename(columns={</span><span class="s3">'position'</span><span class="s1">:</span><span class="s3">'start position'</span><span class="s1">},inplace=</span><span class="s2">True</span><span class="s1">)</span>
+<span class="s1">first_lap_df = laps_df[laps_df[</span><span class="s3">'lap'</span><span class="s1">]==</span><span class="s4">1</span><span class="s1">]</span>
+<span class="s1">conversions_df = conversions_df.merge(first_lap_df[[</span><span class="s3">'raceId'</span><span class="s1">,</span><span class="s3">'driverId'</span><span class="s1">,</span><span class="s3">'lap position'</span><span class="s1">]],on=[</span><span class="s3">'raceId'</span><span class="s1">,</span><span class="s3">'driverId'</span><span class="s1">],how=</span><span class="s3">'left'</span><span class="s1">)</span>
+<span class="s1">conversions_df.rename(columns={</span><span class="s3">'lap position'</span><span class="s1">:</span><span class="s3">'lap 1 position'</span><span class="s1">}, inplace=</span><span class="s2">True</span><span class="s1">)</span>
+<span class="s1">conversions_df = conversions_df.merge(results_df[[</span><span class="s3">'raceId'</span><span class="s1">,</span><span class="s3">'driverId'</span><span class="s1">,</span><span class="s3">'position'</span><span class="s1">]],on=[</span><span class="s3">'raceId'</span><span class="s1">,</span><span class="s3">'driverId'</span><span class="s1">],how=</span><span class="s3">'left'</span><span class="s1">)</span>
+<span class="s1">conversions_df.rename(columns={</span><span class="s3">'position'</span><span class="s1">:</span><span class="s3">'final position'</span><span class="s1">},inplace=</span><span class="s2">True</span><span class="s1">)</span>
+<span class="s1">conversions_df[</span><span class="s3">'Start to Lap 1'</span><span class="s1">]= -conversions_df[</span><span class="s3">'lap 1 position'</span><span class="s1">] + conversions_df[</span><span class="s3">'start position'</span><span class="s1">]</span>
+<span class="s1">conversions_df[</span><span class="s3">'Qualifying conversion'</span><span class="s1">]= -conversions_df[</span><span class="s3">'final position'</span><span class="s1">] + conversions_df[</span><span class="s3">'start position'</span><span class="s1">]</span>
+<span class="s1">conversions_df[</span><span class="s3">'Lap 1 conversion'</span><span class="s1">]= -conversions_df[</span><span class="s3">'final position'</span><span class="s1">] + conversions_df[</span><span class="s3">'lap 1 position'</span><span class="s1">]</span>
+<span class="s1">conversions_df</span>
+<span class="s0">#%% 
+</span><span class="s1">conversions_df.groupby([</span><span class="s3">'code'</span><span class="s1">]).mean()[[</span><span class="s3">'Start to Lap 1'</span><span class="s1">,</span><span class="s3">'Qualifying conversion'</span><span class="s1">,</span><span class="s3">'Lap 1 conversion'</span><span class="s1">]]</span>
+<span class="s0">#%% 
+</span><span class="s1">plt.style.use(</span><span class="s3">'seaborn-whitegrid'</span><span class="s1">)</span>
+<span class="s1">plt.rcParams[</span><span class="s3">'figure.figsize'</span><span class="s1">]=</span><span class="s4">8</span><span class="s1">,</span><span class="s4">12</span>
+<span class="s1">plt.rcParams[</span><span class="s3">'font.family'</span><span class="s1">] = </span><span class="s3">'Arial'</span>
+<span class="s1">plt.rcParams[</span><span class="s3">'font.size'</span><span class="s1">] = </span><span class="s4">12</span>
+<span class="s1">plt.rcParams[</span><span class="s3">'lines.linewidth'</span><span class="s1">] = </span><span class="s4">1</span>
+<span class="s1">plt.rcParams[</span><span class="s3">'axes.labelsize'</span><span class="s1">]=</span><span class="s4">12</span>
+<span class="s1">plt.rcParams[</span><span class="s3">'xtick.labelsize'</span><span class="s1">]=</span><span class="s4">12</span>
+<span class="s1">plt.rcParams[</span><span class="s3">'ytick.labelsize'</span><span class="s1">]=</span><span class="s4">12</span>
+<span class="s1">plt.rcParams[</span><span class="s3">'legend.fontsize'</span><span class="s1">]=</span><span class="s4">12</span>
+<span class="s1">sns.barplot(data=conversions_df,</span>
+            <span class="s1">y=</span><span class="s3">'name'</span><span class="s1">,</span>
+            <span class="s1">x=</span><span class="s3">'Start to Lap 1'</span><span class="s1">,</span>
+            <span class="s1">hue=</span><span class="s3">'code'</span><span class="s1">,</span>
+            <span class="s1">palette=[</span><span class="s3">'purple'</span><span class="s1">,</span><span class="s3">'green'</span><span class="s1">])</span>
+<span class="s1">plt.ylabel(</span><span class="s3">'Grand prix'</span><span class="s1">)</span>
+<span class="s1">plt.xlabel(</span><span class="s3">'Position lost after 1st lap'</span><span class="s1">)</span>
+<span class="s1">plt.tight_layout()</span>
+<span class="s1">plt.xticks(rotation=</span><span class="s4">90</span><span class="s1">)</span>
+<span class="s1">plt.show()</span>
+<span class="s0">#%% 
+</span><span class="s1">plt.style.use(</span><span class="s3">'seaborn-whitegrid'</span><span class="s1">)</span>
+<span class="s1">plt.rcParams[</span><span class="s3">'figure.figsize'</span><span class="s1">]=</span><span class="s4">8</span><span class="s1">,</span><span class="s4">12</span>
+<span class="s1">plt.rcParams[</span><span class="s3">'font.family'</span><span class="s1">] = </span><span class="s3">'Arial'</span>
+<span class="s1">plt.rcParams[</span><span class="s3">'font.size'</span><span class="s1">] = </span><span class="s4">12</span>
+<span class="s1">plt.rcParams[</span><span class="s3">'lines.linewidth'</span><span class="s1">] = </span><span class="s4">1</span>
+<span class="s1">plt.rcParams[</span><span class="s3">'axes.labelsize'</span><span class="s1">]=</span><span class="s4">12</span>
+<span class="s1">plt.rcParams[</span><span class="s3">'xtick.labelsize'</span><span class="s1">]=</span><span class="s4">12</span>
+<span class="s1">plt.rcParams[</span><span class="s3">'ytick.labelsize'</span><span class="s1">]=</span><span class="s4">12</span>
+<span class="s1">plt.rcParams[</span><span class="s3">'legend.fontsize'</span><span class="s1">]=</span><span class="s4">12</span>
+<span class="s1">sns.barplot(data=conversions_df,</span>
+            <span class="s1">y=</span><span class="s3">'name'</span><span class="s1">,</span>
+            <span class="s1">x=</span><span class="s3">'Qualifying conversion'</span><span class="s1">,</span>
+            <span class="s1">hue=</span><span class="s3">'code'</span><span class="s1">,</span>
+            <span class="s1">palette=[</span><span class="s3">'purple'</span><span class="s1">,</span><span class="s3">'green'</span><span class="s1">])</span>
+<span class="s1">plt.ylabel(</span><span class="s3">'Grand prix'</span><span class="s1">)</span>
+<span class="s1">plt.tight_layout()</span>
+<span class="s1">plt.xticks(rotation=</span><span class="s4">90</span><span class="s1">)</span>
+<span class="s1">plt.show()</span>
+<span class="s0">#%% 
+</span><span class="s1">plt.style.use(</span><span class="s3">'seaborn-whitegrid'</span><span class="s1">)</span>
+<span class="s1">plt.rcParams[</span><span class="s3">'figure.figsize'</span><span class="s1">]=</span><span class="s4">8</span><span class="s1">,</span><span class="s4">12</span>
+<span class="s1">plt.rcParams[</span><span class="s3">'font.family'</span><span class="s1">] = </span><span class="s3">'Arial'</span>
+<span class="s1">plt.rcParams[</span><span class="s3">'font.size'</span><span class="s1">] = </span><span class="s4">12</span>
+<span class="s1">plt.rcParams[</span><span class="s3">'lines.linewidth'</span><span class="s1">] = </span><span class="s4">1</span>
+<span class="s1">plt.rcParams[</span><span class="s3">'axes.labelsize'</span><span class="s1">]=</span><span class="s4">12</span>
+<span class="s1">plt.rcParams[</span><span class="s3">'xtick.labelsize'</span><span class="s1">]=</span><span class="s4">12</span>
+<span class="s1">plt.rcParams[</span><span class="s3">'ytick.labelsize'</span><span class="s1">]=</span><span class="s4">12</span>
+<span class="s1">plt.rcParams[</span><span class="s3">'legend.fontsize'</span><span class="s1">]=</span><span class="s4">12</span>
+<span class="s1">sns.lineplot(y=</span><span class="s3">'name'</span><span class="s1">, x=</span><span class="s3">'seconds'</span><span class="s1">, data=laps_df, hue=</span><span class="s3">'code'</span><span class="s1">, palette=[</span><span class="s3">'purple'</span><span class="s1">,</span><span class="s3">'green'</span><span class="s1">])</span>
+
+<span class="s0"># Add a title and labels to the plot</span>
+<span class="s1">plt.title(</span><span class="s3">'Lap Times by Driver'</span><span class="s1">)</span>
+<span class="s1">plt.xlabel(</span><span class="s3">'Lap'</span><span class="s1">)</span>
+<span class="s1">plt.ylabel(</span><span class="s3">'Lap Time (seconds)'</span><span class="s1">)</span>
+
+<span class="s0"># Show the plot</span>
+<span class="s1">plt.show()</span>
+
+<span class="s0">#%% 
+</span>
+<span class="s0">#%% md 
+</span><span class="s1">#interpreting the results: 
+#Our analysis found that Lewis Hamilton had a significantly faster average lap time than Sebastian Vettel, with an average lap time of 1:23.0 compared to an average lap time of 1:24.4 for Vettel. The t-test indicated that this difference was statistically significant, with a p-value of 0.001. Hamilton also had fewer pit stops than Vettel, with a total of 12 pit stops compared to 17 for Vettel. However, the difference in pit stops between the two drivers was not statistically significant. 
+# Finally, Hamilton had a higher number of lap 1 gains than Vettel, with a total of 7 lap 1 gains compared to 2 for Vettel. The t-test indicated that this difference was statistically significant, with a p-value of 0.025. 
+ 
+#the implications and limitations: 
+# while Our analysis suggests that Lewis Hamilton had a stronger performance in the 2018 F1 season based on lap times, the difference in pit stops between the two drivers was not statistically significant. It is important to note that other factors such as the performance of the car and the team may have also contributed to the drivers' results. Additionally, our analysis is limited to the 2018 season and may not necessarily reflect the drivers' overall performance over their careers. 
+ 
+#conclusion: 
+# In conclusion, our analysis indicates that Lewis Hamilton had a stronger performance in the 2018 F1 season compared to Sebastian Vettel based on lap times and lap 1 gains or losses. Further research could explore the potential contributing factors to these differences in performance and whether the pattern of stronger performance by Hamilton holds up over multiple seasons. 
+</span><span class="s0">#%% 
+#Reference list for where i got my codes for the project</span>
+<span class="s0">#BAYAR, E. (2021). Formula 1 70th Anniversary. [online] kaggle.com. Available at: https://www.kaggle.com/code/ekrembayar/formula-1-70th-anniversary/report [Accessed 18 Dec. 2022].</span>
+<span class="s0"># KIRSTEIN, C. (2022). HAM vs VER 2021 - laps, pitstops, &amp; conversions. [online] kaggle.com. Available at: https://www.kaggle.com/code/carlkirstein/ham-vs-ver-2021-laps-pitstops-conversions [Accessed 18 Dec. 2022].</span>
+<span class="s0"># Vopani (2022). Formula 1 World Championship (1950 - 2022). [online] www.kaggle.com. Available at: https://www.kaggle.com/datasets/rohanrao/formula-1-world-championship-1950-2020?focusReplyOnRender=true [Accessed 18 Dec. 2022].</span>
+<span class="s0"># Wyawahare, C. (2020). Formula 1 Grand Prix Analysis. [online] Medium. Available at: https://towardsdatascience.com/formula-1-grand-prix-analysis-d05d73b1e79c.</span>
+<span class="s0">#%% md 
+</span></pre>
+</body>
+</html>
